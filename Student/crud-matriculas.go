@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"MichelPilha/pkg/errors"
 )
 
-type Funcs interface {
-	ToStoreStudent()
-	GetAllStudentsFromList()
-	GetStudentById()
-	RemoveAllStudents()
-	RemoveStudentByMatricula()
+type Components interface {
+	ToStoreStudent() (err error)
+	GetAllStudentsFromList() (err error)
+	GetStudentById() (m StudentsList, err error)
+	RemoveAllStudents() (l StudentsList) 
+	RemoveStudentByMatricula() (rs StudentsList, err error)
 }
 
 type Student struct {
@@ -25,23 +27,28 @@ type StudentsList struct {
 	addStudentList []Student
 }
 
-var (
-	ErrNullName          = fmt.Errorf("por favor insira um nome valido")
-	ErrNullAge           = fmt.Errorf("por favor insira uma idade valida")
-	ErrNullMatricula     = fmt.Errorf("por favor insira uma matricula valida")
-	ErrNotFoundMatricula = fmt.Errorf("Matricula do aluno não encontrado")
-	ErrNullValues        = fmt.Errorf("não pudemos salvar os seus dados")
-)
 
-func (sl *StudentsList) ToStoreStudent() (err error) {
+type implStudent struct {
+	Student
+}
+
+
+func NewStudent() Components {
+	return &implStudent{}
+}
+
+var sl StudentsList
+
+func (e implStudent) ToStoreStudent() (err error) {
 
 	s := Student{}
+
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Println("Adicione o nome do aluno: ")
 	s.nomeCompleto, err = reader.ReadString('\n')
 	if err != nil {
-		fmt.Println(ErrNullName)
+		fmt.Println(errors.ErrNullName)
 		return
 	}
 
@@ -49,14 +56,14 @@ func (sl *StudentsList) ToStoreStudent() (err error) {
 	fmt.Printf("Informe-nos a sua idade %v: ", firstName[0])
 	_, err = fmt.Scan(&s.age)
 	if err != nil {
-		fmt.Println(ErrNullAge)
+		fmt.Println(errors.ErrNullAge)
 		return
 	}
 
 	fmt.Printf("Informe-nos a sua matricula %v: ", firstName[0])
 	_, err = fmt.Scan(&s.matricula)
 	if err != nil {
-		fmt.Println(ErrNullMatricula)
+		fmt.Println(errors.ErrNullMatricula)
 		return
 	}
 
@@ -66,9 +73,9 @@ func (sl *StudentsList) ToStoreStudent() (err error) {
 	return err
 }
 
-func (sl *StudentsList) GetAllStudentsFromList() (s StudentsList) {
+func (e implStudent) GetAllStudentsFromList() (err error) {
 
-	for _, s := range sl.addStudentList {
+	for _, s := range sl.addStudentList{
 		fmt.Printf(
 			"\nNome do Aluno: %s"+
 				"Idade do aluno: %d\n"+
@@ -76,17 +83,17 @@ func (sl *StudentsList) GetAllStudentsFromList() (s StudentsList) {
 			s.nomeCompleto, s.age, s.matricula)
 	}
 
-	return s
+	return nil
 }
 
-func (sl *StudentsList) GetStudentById() (m StudentsList, err error) {
+func (e implStudent) GetStudentById() (m StudentsList, err error) {
 
 	var idMatricula int
 
 	fmt.Println("\nInforme-nos a matricula do aluno que deseja procurar: ")
 	_, err = fmt.Scan(&idMatricula)
 	if err != nil {
-		return StudentsList{}, ErrNullMatricula
+		return StudentsList{}, errors.ErrNullMatricula
 	}
 
 	matriculaEncontrada := false
@@ -99,13 +106,13 @@ func (sl *StudentsList) GetStudentById() (m StudentsList, err error) {
 	}
 
 	if !matriculaEncontrada {
-		return StudentsList{}, ErrNotFoundMatricula
+		return StudentsList{}, errors.ErrNotFoundMatricula
 	}
 
 	return m, nil
 }
 
-func (sl *StudentsList) RemoveAllStudents() (l StudentsList) {
+func (e implStudent) RemoveAllStudents() (l StudentsList) {
 
 	sl.addStudentList = l.addStudentList
 
@@ -116,14 +123,14 @@ func (sl *StudentsList) RemoveAllStudents() (l StudentsList) {
 	return l
 }
 
-func (sl *StudentsList) RemoveStudentByMatricula() (rs StudentsList, err error) {
+func (e implStudent) RemoveStudentByMatricula() (rs StudentsList, err error) {
 
 	var idMatricula int
 
 	fmt.Println("\nInforme-nos a matricula do aluno que deseja procurar: ")
 	_, err = fmt.Scan(&idMatricula)
 	if err != nil {
-		return StudentsList{}, ErrNullMatricula
+		return StudentsList{}, errors.ErrNullMatricula
 	}
 
 	matriculaEncontrada := false
@@ -136,7 +143,7 @@ func (sl *StudentsList) RemoveStudentByMatricula() (rs StudentsList, err error) 
 	}
 
 	if !matriculaEncontrada {
-		return StudentsList{}, ErrNotFoundMatricula
+		return StudentsList{}, errors.ErrNotFoundMatricula
 	}
 
 	return rs, nil

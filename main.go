@@ -5,13 +5,15 @@ import (
 )
 
 func main() {
-	student := Student.StudentsList{}
 
-	student.ToStoreStudent()
-	student.RemoveAllStudents()
-	student.RemoveStudentByMatricula()
-	student.GetAllStudentsFromList()
-	student.GetStudentById()
+	
+
+	Student.NewStudent().ToStoreStudent()
+	Student.NewStudent().ToStoreStudent()
+
+	Student.NewStudent().GetAllStudentsFromList()
+	Student.NewStudent().GetStudentById()
+	
 
 	//fazer menu para chamar todas as ações!
 
